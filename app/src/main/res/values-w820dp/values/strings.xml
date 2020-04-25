@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">KoiTab - Festivals de France</string>
+    <string name="tab_text_1">Festivals</string>
+    <string name="tab_text_2">Favoris</string>
+    <string name="settings">Paramètres</string>
+    <string name="about">À propos</string>
+</resources>

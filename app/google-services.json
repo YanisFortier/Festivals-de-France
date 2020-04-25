@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "643623285781",
+    "firebase_url": "https://koifaire-6d06e.firebaseio.com",
+    "project_id": "koifaire-6d06e",
+    "storage_bucket": "koifaire-6d06e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643623285781:android:9a8a6be1357d401237ca1c",
+        "android_client_info": {
+          "package_name": "com.yfortier.koifaire"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "643623285781-les13i5emhl0dgvi20rqu73b1htbtf7l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yfortier.koifaire",
+            "certificate_hash": "b8d4f79f94640dab6352777f91afa96a7fe5b87b"
+          }
+        },
+        {
+          "client_id": "643623285781-smds1lvrot2j1uktbaac3fqlupfo2o4e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yfortier.koifaire",
+            "certificate_hash": "8af7d3f42972821f5209cb834eb6b7d3a3a3105d"
+          }
+        },
+        {
+          "client_id": "643623285781-bs5m4juquofjglak5charsnsavoj3h6o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBR0RvEJuct2t2NeRbxfdCkht2ldcEPhi4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "643623285781-bs5m4juquofjglak5charsnsavoj3h6o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643623285781:android:0588e963c6d2c2ec37ca1c",
+        "android_client_info": {
+          "package_name": "com.yfortier.koifaire_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "643623285781-7nehipo0qcnpbhilbc5f985jipoaks9p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yfortier.koifaire_2",
+            "certificate_hash": "8af7d3f42972821f5209cb834eb6b7d3a3a3105d"
+          }
+        },
+        {
+          "client_id": "643623285781-bs5m4juquofjglak5charsnsavoj3h6o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBR0RvEJuct2t2NeRbxfdCkht2ldcEPhi4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "643623285781-bs5m4juquofjglak5charsnsavoj3h6o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
