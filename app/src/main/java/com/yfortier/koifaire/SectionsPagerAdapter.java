@@ -1,8 +1,7 @@
 package com.yfortier.koifaire;
 
 import android.content.Context;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
+import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,9 +9,16 @@ import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.yfortier.koifaire.ListeFragment.ListeFragment;
+import com.yfortier.koifaire.model.Festival;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * A [FragmentPagerAdapter] that returns a fragment corresponding to
@@ -23,10 +29,13 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     @StringRes
     private static final int[] TAB_TITLES = new int[]{R.string.tab_text_1, R.string.tab_text_2};
     private final Context mContext;
+    private ArrayList<Festival> favoris;
 
     public SectionsPagerAdapter(Context context, FragmentManager fm) {
         super(fm);
         mContext = context;
+
+        loadData();
     }
 
 
@@ -37,9 +46,11 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         switch (position) {
             case 0:
                 fragment = new MapFragment();
+                loadData();
                 break;
             case 1:
                 fragment = new ListeFragment();
+                loadData();
                 break;
         }
         assert fragment != null;
@@ -49,6 +60,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     @Nullable
     @Override
     public CharSequence getPageTitle(int position) {
+        loadData();
         return mContext.getResources().getString(TAB_TITLES[position]);
     }
 
@@ -58,27 +70,15 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         return 2;
     }
 
-    public class CustomViewPager extends ViewPager {
+    public void loadData() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("SHARED", MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("favoris", null);
+        Type type = new TypeToken<ArrayList<Festival>>() {
+        }.getType();
+        favoris = gson.fromJson(json, type);
 
-        private boolean enabled;
-
-        public CustomViewPager(Context context, AttributeSet attrs) {
-            super(context, attrs);
-            this.enabled = true;
-        }
-
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            return enabled && super.onTouchEvent(event);
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(MotionEvent event) {
-            return enabled && super.onTouchEvent(event);
-        }
-
-        public void setPagingEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
+        if (favoris == null)
+            favoris = new ArrayList<>();
     }
 }

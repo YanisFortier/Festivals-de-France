@@ -1,9 +1,12 @@
 package com.yfortier.koifaire;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +32,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.yfortier.koifaire.model.Festival;
 
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,21 +45,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.location.Location.distanceBetween;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
-    private List<Festival> festivals = MainActivity.festivals;
     private static LatLngBounds FranceMetroBounds = new LatLngBounds(
             new LatLng(42.6965954131, -4.32784220122),
             new LatLng(50.4644483399, 7.38468690323)
     );
-
+    //Favoris
+    ArrayList<Festival> favoris = new ArrayList<>();
+    private List<Festival> festivals = MainActivity.festivals;
     //Location
     private Location mCurrentLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private MapView mapView;
-
     //Interface
     private GoogleMap mMap;
     private ImageButton btnNom;
@@ -61,15 +68,38 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private EditText editTxtRecherche;
     private Spinner spinnerDepartements;
     private Spinner spinnerDomaine;
-
     //Markers
     private LatLng mLatLng;
     private ArrayList<MarkerOptions> mMarkers = new ArrayList<>();
 
+    //Récupération & Formatage des dates de festivals
+    public static String getDatesFestivals(Festival festival) {
+        String dates = "Dates inconnues";
+        SimpleDateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd", new Locale("fr", "FR"));
+        SimpleDateFormat newDateFormat = new SimpleDateFormat("dd MMMM", new Locale("fr", "FR"));
+
+        if (festival.getDate_de_debut() != null && festival.getDate_de_fin() != null) {
+            try {
+                Date dateDebutBrut = oldDateFormat.parse(festival.getDate_de_debut());
+                Date dateFinBrut = oldDateFormat.parse(festival.getDate_de_fin());
+
+                assert dateDebutBrut != null;
+                assert dateFinBrut != null;
+
+                String dateDebut = newDateFormat.format(dateDebutBrut);
+                String dateFin = newDateFormat.format(dateFinBrut);
+                dates = String.format("Du %1$s au %2$s", dateDebut, dateFin);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return dates;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
+
 
         //Setup - FindViewById
         btnNom = view.findViewById(R.id.btnNom);
@@ -87,13 +117,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        //Spinner
+        //Favoris
+        loadData();
         return view;
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(FranceMetroBounds, 150)); // On recentre sur la France métropolitaine
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings();
         mMap.setMaxZoomPreference(17);
@@ -103,6 +135,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onInfoWindowClick(Marker marker) {
                 if (!marker.getTitle().endsWith("⭐")) {// Pas en favori ! On l'ajoute
+                    for (Festival festival : festivals) {
+                        if (festival.getNom_de_la_manifestation().equals(marker.getTitle()))
+                            saveData(festival);
+                    }
                     Toast.makeText(getActivity(), marker.getTitle() + " ajouté en favoris.", Toast.LENGTH_SHORT).show();
                     marker.hideInfoWindow();
                     marker.setTitle(marker.getTitle().concat(" ⭐")); // Ajout d'un petit emoji
@@ -115,8 +151,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-                focusFrance(); //On recentre sur la France métropolitaine
-                }
+                //focusFrance(); //On recentre sur la France métropolitaine
+            }
         });
 
         //Fonction utilisée pour formater le snippet du marker et avoir plusieurs lignes
@@ -235,6 +271,49 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
+    private void saveData(Festival festival) {
+        //Delete from SharedPrefs
+        //Recuperation de la liste des favoris
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("SHARED", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String jsonOutput = sharedPreferences.getString("favoris", null);
+        Type type = new TypeToken<ArrayList<Festival>>() {
+        }.getType();
+        favoris = gson.fromJson(jsonOutput, type);
+
+        //On l'efface du sharedpref
+        editor.remove("favoris");
+        editor.apply();
+
+        //On remet la liste avec le festival ajouté
+        if (favoris == null)
+            favoris = new ArrayList<>();
+        favoris.add(festival);
+        String jsonInput = gson.toJson(favoris);
+        editor.putString("favoris", jsonInput);
+        editor.apply();
+
+        editor.commit();
+
+        Intent i = new Intent(getActivity(), MainActivity.class);
+        startActivity(i);
+        getActivity().finish();
+        getActivity().overridePendingTransition(0, 0);
+        Log.e("Favoris", favoris.toString());
+    }
+
+    public void loadData() {
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("SHARED", MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("favoris", null);
+        Type type = new TypeToken<ArrayList<Festival>>() {
+        }.getType();
+        favoris = gson.fromJson(json, type);
+        if (favoris == null)
+            favoris = new ArrayList<>();
+    }
+
     private void rechercheDepartement(Festival festival, String departement) {
         if (festival.getDepartement().equals(departement)) {
             mLatLng = new LatLng(festival.getLatitude(), festival.getLongitude());
@@ -283,32 +362,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
-
-
-    //Récupération & Formatage des dates de festivals
-    public static String getDatesFestivals(Festival festival) {
-        String dates = "Dates inconnues";
-        SimpleDateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd", new Locale("fr", "FR"));
-        SimpleDateFormat newDateFormat = new SimpleDateFormat("dd MMMM", new Locale("fr", "FR"));
-
-        if (festival.getDate_de_debut() != null && festival.getDate_de_fin() != null) {
-            try {
-                Date dateDebutBrut = oldDateFormat.parse(festival.getDate_de_debut());
-                Date dateFinBrut = oldDateFormat.parse(festival.getDate_de_fin());
-
-                assert dateDebutBrut != null;
-                assert dateFinBrut != null;
-
-                String dateDebut = newDateFormat.format(dateDebutBrut);
-                String dateFin = newDateFormat.format(dateFinBrut);
-                dates = String.format("Du %1$s au %2$s", dateDebut, dateFin);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-        return dates;
-    }
-
     private void fetchLastLocation() {
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(new OnSuccessListener<Location>() {
@@ -322,7 +375,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void focusFrance(){
+    private void focusFrance() {
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(FranceMetroBounds, 150), 2000, null); // On recentre sur la France métropolitaine
     }
 

@@ -14,7 +14,6 @@ public class Festival {
     private Boolean isFavori;
     private double latitude; // Valeur 0 dans le json - coordonnees_insee
     private double longitude; // Valeur 1 dans le json - coordonnees_insee
-
     public Festival() {
     }
 
@@ -32,6 +31,25 @@ public class Festival {
         this.isFavori = isFavori;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    @Override
+    public String toString() {
+        return "Festival{" +
+                "nom_de_la_manifestation='" + nom_de_la_manifestation + '\'' +
+                ", date_de_debut='" + date_de_debut + '\'' +
+                ", date_de_fin='" + date_de_fin + '\'' +
+                ", region='" + region + '\'' +
+                ", nom_departement='" + nom_departement + '\'' +
+                ", departement='" + departement + '\'' +
+                ", site_web='" + site_web + '\'' +
+                ", domaine='" + domaine + '\'' +
+                ", complement_domaine='" + complement_domaine + '\'' +
+                ", commune_principale='" + commune_principale + '\'' +
+                ", isFavori=" + isFavori +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                '}';
     }
 
     public String getNom_de_la_manifestation() {

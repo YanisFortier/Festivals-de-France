@@ -1,5 +1,8 @@
 package com.yfortier.koifaire.ListeFragment;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,20 +12,28 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.yfortier.koifaire.R;
+import com.yfortier.koifaire.model.Festival;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.graphics.Color.parseColor;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
+    private ArrayList<Festival> favoris;
     private ArrayList<RecyclerViewItem> mRecyclerList;
+    private Context mContext;
     private OnItemClickListener mListener;
     private RecyclerViewItem mRecentlyDeletedItem;
     private int mRecentlyDeletedItemPosition;
 
-    public RecyclerViewAdapter(ArrayList<RecyclerViewItem> recyclerList) {
+    public RecyclerViewAdapter(ArrayList<RecyclerViewItem> recyclerList, Context context) {
         mRecyclerList = recyclerList;
+        mContext = context;
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -44,27 +55,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.TextViewDomaine.setText(currentItem.getmDomaine());
         holder.TextViewDates.setText(currentItem.getmDates());
         holder.TextViewVille.setText(currentItem.getmVille().substring(0, 1).toUpperCase() + currentItem.getmVille().substring(1).toLowerCase());
-        holder.TextViewDistance.setText(Integer.toString(currentItem.getmDistance()) + " km - ");
+        holder.TextViewDistance.setText(currentItem.getmDistance() + " km - ");
 
         holder.ImageView.setBackgroundColor(parseColor(getDomaineColor(currentItem.getmDomaine())));
-    }
-
-    private void showUndoSnackbar() {/*
-        View view = mActivity.findViewById(R.id.coordinator_layout);
-        Snackbar snackbar = Snackbar.make(view, "Salut", Snackbar.LENGTH_LONG);
-        snackbar.setAction("Annuler", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RecyclerViewAdapter.this.undoDelete();
-            }
-        });
-        snackbar.show();
-        */
-    }
-
-    private void undoDelete() {
-        mRecyclerList.add(mRecentlyDeletedItemPosition, mRecentlyDeletedItem);
-        notifyItemInserted(mRecentlyDeletedItemPosition);
     }
 
     @Override
@@ -111,7 +104,32 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mRecentlyDeletedItemPosition = position;
         mRecyclerList.remove(position);
         notifyItemRemoved(position);
-        showUndoSnackbar();
+
+        //Delete from SharedPrefs
+        //Recuperation de la liste des favoris
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("SHARED", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String jsonOutput = sharedPreferences.getString("favoris", null);
+        Type type = new TypeToken<ArrayList<Festival>>() {
+        }.getType();
+        favoris = gson.fromJson(jsonOutput, type);
+
+        //On l'efface du sharedpref
+        editor.remove("favoris");
+        editor.apply();
+
+        //On remet la liste avec le festival retiré
+        favoris.remove(position);
+        String jsonInput = gson.toJson(favoris);
+        editor.putString("favoris", jsonInput);
+        editor.apply();
+
+        editor.commit();
+
+        Log.e("Festivals", favoris.toString());
+        if (favoris == null)
+            favoris = new ArrayList<>();
     }
 
     public interface OnItemClickListener {

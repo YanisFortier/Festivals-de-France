@@ -12,6 +12,7 @@ public class CustomViewPager extends ViewPager {
 
     public CustomViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
+
         this.enabled = true;
     }
 
@@ -28,4 +29,5 @@ public class CustomViewPager extends ViewPager {
     public void setPagingEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
 }

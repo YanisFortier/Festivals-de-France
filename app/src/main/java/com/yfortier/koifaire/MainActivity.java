@@ -10,10 +10,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.tabs.TabLayout;
 import com.yfortier.koifaire.model.Festival;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
+
+    //Favoris
+    public static ArrayList<Festival> favoris = new ArrayList<>();
+
 
     public static List<Festival> festivals;
 
@@ -56,6 +61,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
-
 }
