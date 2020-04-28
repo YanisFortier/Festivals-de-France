@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.squareup.picasso.Picasso;
 import com.yfortier.koifaire.model.Festival;
 
 import java.util.List;
@@ -30,12 +31,12 @@ public class LaunchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
         ImageView imageView = findViewById(R.id.splash);
-
         // Splash random
         int[] ListOfImages = {R.drawable.splash1, R.drawable.splash2, R.drawable.splash3, R.drawable.splash4, R.drawable.splash5};
         Random random = new Random(System.currentTimeMillis());
         int posOfImage = random.nextInt(ListOfImages.length);
-        imageView.setBackgroundResource(ListOfImages[posOfImage]);
+        //imageView.setBackgroundResource(ListOfImages[posOfImage]);
+        Picasso.with(this).load(ListOfImages[posOfImage]).fit().into(imageView);
 
         // Permission
         if (ActivityCompat.checkSelfPermission(LaunchActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
